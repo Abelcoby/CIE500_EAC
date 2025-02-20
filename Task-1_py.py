@@ -1,0 +1,87 @@
+
+#%%
+import networkx as nx
+import random
+from itertools import combinations 
+import matplotlib.pyplot as plt
+import numpy as np 
+
+# in the below script we are going to generate a random graph 
+
+## first we need to generate 8 random nodes in the horizontal space (0,4) and vertical space (0,8) 
+random.seed(66)
+pos = {i: (random.random() * 2.0, random.random() * 3.0) for i in range(10)}
+
+## we create an edge list by a given probability 
+edge_list = []
+for node_pair in combinations(list(pos.keys()), 2): 
+     exist_prob = random.random()
+     if exist_prob > 0.7:
+          edge_list.append(node_pair)
+else:
+        "continue"
+        
+
+## Now we can create graph based on the positions and edge list. 
+
+G = nx.from_edgelist(edge_list, create_using=nx.Graph)
+fig, ax = plt.subplots() 
+nx.draw_networkx(G, pos=pos, with_labels=True, ax=ax)
+plt.tight_layout()
+ax.set_aspect("equal") # set the equal scale of horizontal and vertical 
+ax.axis("off") # remove the frame of the generated figure
+plt.savefig(
+    "/Users/abel/Desktop/CIE_500/examplegraph.jpg",
+    dpi=300,
+    bbox_inches="tight",
+)
+
+## We can use networkx to get the graph's adjacency matrix 
+def bmatrix(
+              a,
+):  # reference source: https://stackoverflow.com/questions/17129290/numpy-2d-and-1d-array-to-latex-bmatrix
+    """Returns a LaTeX bmatrix 
+
+    :a: numpy array
+    :returns: LaTeX bmatrix as a string
+    """
+    if len(a.shape) > 2:
+        raise ValueError("bmatrix can at most display two dimensions")
+    lines = str(a).replace("[", "").replace("]", "").splitlines()
+    rv = [r"\begin{bmatrix}"]
+    rv += ["  " + " & ".join(l.split()) + r"\\" for l in lines]
+    rv += [r"\end{bmatrix}"]
+    return "\n".join(rv) 
+
+A = nx.adjacency_matrix(G, nodelist=list(pos.keys())).toarray()
+
+print(f"The latex version of adjacency matrix is \n {bmatrix(A)}")
+
+
+# Now let's add a self-loop to the network
+
+G.add_edge(4, 4)
+G.add_edge(2, 2)
+
+
+fig, ax = plt.subplots()
+nx.draw_networkx(G, pos=pos, with_labels=True, ax=ax, arrowstyle="<|-", style="dashed")
+plt.tight_layout()
+ax.set_aspect("equal")  # set the equal scale of horizontal and vertical
+ax.axis("off")  # remove the frame of the generated figure
+plt.savefig(
+    "/Users/abel/Desktop/CIE_500/examplegraph_selfloop.jpg",
+    dpi=300,
+    bbox_inches="tight",
+)
+
+# Finally, we can get the edgelist and adjancency matrix from Graph directly. We need to define the node sequence by
+# feeding the nodelist option.
+
+print(
+    f"The adjancency matrix of G is \n {nx.adjacency_matrix(G, nodelist=list(pos.keys())).toarray()}"
+)
+
+print(f"The edge list of G is \n {nx.to_edgelist(G)}")
+
+
